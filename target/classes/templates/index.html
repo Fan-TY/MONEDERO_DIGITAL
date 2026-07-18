@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lukita - Tu Monedero Digital Multibanco</title>
+    <!-- CSS de Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Iconos de Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Vinculación limpia de tu CSS desde static -->
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark-blue shadow fixed-top py-3 border-bottom border-dark">
+        <div class="container">
+            <a class="navbar-brand fw-bold fs-3 text-white d-flex align-items-center" th:href="@{/}">
+                <i class="bi bi-coin text-electric-blue me-2"></i>Lukita
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto mb-2 mb-lg-0 ms-4">
+                    <li class="nav-item"><a class="nav-link active fw-semibold" th:href="@{/}">Inicio</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#nosotros">Nosotros</a></li>
+                    <li class="nav-item"><a class="nav-link fw-semibold" href="#ayuda">Ayuda</a></li>
+                </ul>
+                <div class="d-flex">
+                    <a th:href="@{/login}" class="btn btn-electric fw-bold shadow-sm px-4 rounded-pill">
+                        <i class="bi bi-box-arrow-in-right me-1"></i> Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div style="margin-top: 100px;"></div>
+
+    <!-- Héroe / Bienvenida -->
+    <div class="container my-auto py-5">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 text-center text-lg-start">
+                <h1 class="display-4 fw-bold lh-1 text-white mb-3">Toda tu lukita en un solo lugar.</h1>
+                <p class="col-lg-10 fs-5 text-muted-dark">La forma más inteligente y segura de asociar tus cuentas de diferentes bancos, realizar transferencias instantáneas, recargas y retiros.</p>
+                <div class="d-grid gap-2 d-md-flex justify-content-md-start mt-4">
+                    <a th:href="@{/login}" class="btn btn-cta btn-lg px-5 me-md-2 fw-extrabold shadow rounded-pill">Comenzar ahora</a>
+                    <a href="#caracteristicas" class="btn btn-outline-electric btn-lg px-4 rounded-pill fw-bold">Ver beneficios</a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="bi bi-wallet2 text-electric-blue" style="font-size: 11rem; filter: drop-shadow(0px 10px 20px rgba(0, 141, 218, 0.2));"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Características -->
+    <div id="caracteristicas" class="bg-dark-blue py-5 border-top border-bottom border-dark shadow-sm">
+        <div class="container">
+            <div class="row g-4 row-cols-1 row-cols-lg-3">
+                <div class="feature col text-center p-4 feature-box">
+                    <div class="feature-icon d-inline-flex align-items-center justify-content-center text-white bg-dark-blue fs-2 rounded-4 p-3 mb-3 shadow-sm border border-secondary">
+                        <i class="bi bi-bank text-electric-blue"></i>
+                    </div>
+                    <h3 class="fs-4 fw-bold text-white">Conexión Multibanco</h3>
+                    <p class="text-muted-dark">Asocia tus cuentas del BCP, Interbank, BBVA y más. Controla tus saldos desde una única aplicación.</p>
+                </div>
+                <div class="feature col text-center p-4 feature-box">
+                    <div class="feature-icon d-inline-flex align-items-center justify-content-center text-white bg-dark-blue fs-2 rounded-4 p-3 mb-3 shadow-sm border border-secondary">
+                        <i class="bi bi-bell-fill text-electric-blue"></i>
+                    </div>
+                    <h3 class="fs-4 fw-bold text-white">Alertas en Tiempo Real</h3>
+                    <p class="text-muted-dark">Entérate al segundo cuando recibas una transferencia o realices una recarga con nuestras notificaciones.</p>
+                </div>
+                <div class="feature col text-center p-4 feature-box">
+                    <div class="feature-icon d-inline-flex align-items-center justify-content-center text-white bg-dark-blue fs-2 rounded-4 p-3 mb-3 shadow-sm border border-secondary">
+                        <i class="bi bi-cash-stack text-electric-blue"></i>
+                    </div>
+                    <h3 class="fs-4 fw-bold text-white">Recargas y Retiros</h3>
+                    <p class="text-muted-dark">Mueve fondos hacia tu monedero o retíralos a tus cuentas bancarias de manera inmediata y con estados claros.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nosotros -->
+    <div id="nosotros" class="container py-5">
+        <div class="row align-items-center py-4">
+            <div class="col-md-6">
+                <h2 class="fw-bold text-white mb-3">Sobre Nosotros</h2>
+                <p class="text-muted-dark fs-5">En <strong>Lukita</strong>, buscamos simplificar la vida financiera de la comunidad. Somos una solución Fintech diseñada para unificar tu dinero, permitiéndote gestionar cuentas de múltiples entidades sin pagar de más y con la velocidad que tu día a día exige.</p>
+            </div>
+            <div class="col-md-6 text-center">
+                <i class="bi bi-shield-check text-electric-blue" style="font-size: 6rem; filter: drop-shadow(0px 5px 10px rgba(0,141,218,0.2));"></i>
+                <h5 class="fw-bold text-white mt-2">Seguridad de Nivel Bancario</h5>
+                <p class="text-muted-dark small">Tus datos, cuentas y transferencias viajan bajo estrictos protocolos de encriptación.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ayuda -->
+    <div id="ayuda" class="container py-5 mb-5">
+        <div class="bg-card-dark p-5 rounded-4 shadow border border-dark">
+            <h2 class="fw-bold text-white text-center mb-4">Centro de Ayuda</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="accordion accordion-flush" id="accordionAyuda">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button fw-bold" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                    ¿Qué bancos puedo asociar a Lukita?
+                                </button>
+                            </h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#accordionAyuda">
+                                <div class="accordion-body text-muted-dark">
+                                    Puedes asociar cuentas corrientes y de ahorros de los principales bancos del país como BCP, Interbank, BBVA y Scotiabank de manera inmediata.
+                                </div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header">
+                                <button class="accordion-button collapsed fw-bold text-dark-blue" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                    ¿Cuánto tardan en procesarse las recargas y retiros?
+                                </button>
+                            </h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#accordionAyuda">
+                                <div class="accordion-body text-muted-dark">
+                                    ¡Son instantáneas! El estado de la transacción se procesa y actualiza en tiempo real en tu panel privado junto con alertas del sistema.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer mt-auto py-4 bg-dark-blue text-white-50 border-top border-dark">
+        <div class="container text-center">
+            <span class="small">© 2026 <strong class="text-white">Lukita Fintech</strong> - Proyecto UTP. Todos los derechos reservados.</span>
+        </div>
+    </footer>
+
+    <script th:src="@{/js/notificaciones.js}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

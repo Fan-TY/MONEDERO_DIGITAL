@@ -6,6 +6,7 @@ import com.utp.AppBanco.model.Recarga;
 import com.utp.AppBanco.model.Retiro;
 import com.utp.AppBanco.pattern.facade.RetiroFacade;
 import com.utp.AppBanco.pattern.factory.OperacionFinancieraFactory;
+import com.utp.AppBanco.pattern.observer.EventoOperacion;
 import com.utp.AppBanco.pattern.observer.NotificadorOperaciones;
 import com.utp.AppBanco.pattern.prototype.OperacionFrecuente;
 import com.utp.AppBanco.pattern.singleton.DatabaseConnectionManager;
@@ -45,11 +46,11 @@ public class RecargaRetiroService {
     @Autowired
     private DatabaseConnectionManager dbManager;
 
-
     private OperacionFrecuente ultimaOperacionFrecuente;
 
     @Transactional
     public Recarga recargarSaldo(String numeroCuenta, double monto, String tipoOrigen, String referencia) {
+
         System.out.println("[SINGLETON] Recarga iniciada. Estado BD: " + dbManager.getEstadoConexion());
 
         Cuenta cuenta = cuentaRepository.findById(numeroCuenta)
@@ -59,113 +60,183 @@ public class RecargaRetiroService {
             throw new IllegalArgumentException("El monto de recarga debe ser mayor a cero.");
         }
 
-
-        OperacionFinancieraFactory.TipoOperacion tipo = "TARJETA".equalsIgnoreCase(tipoOrigen)
-                ? OperacionFinancieraFactory.TipoOperacion.RECARGA_TARJETA
-                : OperacionFinancieraFactory.TipoOperacion.RECARGA_BANCO;
-
+        OperacionFinancieraFactory.TipoOperacion tipo =
+                "TARJETA".equalsIgnoreCase(tipoOrigen)
+                        ? OperacionFinancieraFactory.TipoOperacion.RECARGA_TARJETA
+                        : OperacionFinancieraFactory.TipoOperacion.RECARGA_BANCO;
 
         String referenciaLimpia = referencia == null ? "" : referencia.trim();
 
-        String resultado = OperacionFinancieraFactory.crear(tipo).ejecutar(monto, referenciaLimpia);
-
+        String resultado = OperacionFinancieraFactory
+                .crear(tipo)
+                .ejecutar(monto, referenciaLimpia);
 
         Cuenta cuentaOrigenInterna = cuentaRepository.findById(referenciaLimpia).orElse(null);
+
         String nombrePropietarioOrigen = null;
 
+        if (tipo == OperacionFinancieraFactory.TipoOperacion.RECARGA_BANCO
+                && cuentaOrigenInterna == null) {
 
-        if (tipo == OperacionFinancieraFactory.TipoOperacion.RECARGA_BANCO && cuentaOrigenInterna == null) {
             throw new IllegalArgumentException(
-                    "La cuenta de origen '" + referenciaLimpia + "' no existe en el sistema. " +
-                    "Verifica el número de cuenta o selecciónalo de la lista.");
+                    "La cuenta de origen '" + referenciaLimpia +
+                            "' no existe en el sistema.");
         }
 
         if (cuentaOrigenInterna != null) {
+
             if (cuentaOrigenInterna.getNumeroCuenta().equals(numeroCuenta)) {
-                throw new IllegalArgumentException("La cuenta de origen no puede ser la misma que la cuenta a recargar.");
+                throw new IllegalArgumentException(
+                        "La cuenta de origen no puede ser la misma.");
             }
+
             if (cuentaOrigenInterna.getSaldo() < monto) {
-                throw new IllegalArgumentException("Saldo insuficiente en la cuenta de origen (" + referenciaLimpia + ").");
+                throw new IllegalArgumentException(
+                        "Saldo insuficiente en la cuenta origen.");
             }
-            cuentaOrigenInterna.setSaldo(cuentaOrigenInterna.getSaldo() - monto);
+
+            cuentaOrigenInterna.setSaldo(
+                    cuentaOrigenInterna.getSaldo() - monto);
+
             cuentaRepository.save(cuentaOrigenInterna);
 
-            nombrePropietarioOrigen = cuentaOrigenInterna.getUsuario() != null
-                    ? cuentaOrigenInterna.getUsuario().getNombre()
-                    : null;
-
-            System.out.println("[RECARGA] Transferencia interna: se descontó S/." + monto
-                    + " de la cuenta origen " + referenciaLimpia
-                    + (nombrePropietarioOrigen != null ? " (titular: " + nombrePropietarioOrigen + ")" : ""));
+            nombrePropietarioOrigen =
+                    cuentaOrigenInterna.getUsuario() != null
+                            ? cuentaOrigenInterna.getUsuario().getNombre()
+                            : null;
         }
 
         Recarga recarga = new Recarga();
+
         recarga.setCuenta(cuenta);
         recarga.setMonto(monto);
         recarga.setTipoOrigen(tipo.name());
         recarga.setReferenciaOrigen(referenciaLimpia);
+
         recarga.cambiarEstado(EstadoOperacion.VALIDADO);
 
-        String comprobante = "REC-" + UUID.randomUUID().toString().substring(0, 8).toUpperCase();
+        String comprobante =
+                "REC-" + UUID.randomUUID().toString()
+                        .substring(0, 8)
+                        .toUpperCase();
+
         recarga.setComprobante(comprobante);
 
         cuenta.setSaldo(cuenta.getSaldo() + monto);
+
         cuentaRepository.save(cuenta);
 
         recarga.cambiarEstado(EstadoOperacion.ENTREGADO);
-        recargaRepository.save(recarga);
 
+        recargaRepository.save(recarga);
 
         recarga.setTitularOrigen(nombrePropietarioOrigen);
 
-
-        ultimaOperacionFrecuente = new OperacionFrecuente(tipo.name(), monto, referenciaLimpia);
-
+        ultimaOperacionFrecuente =
+                new OperacionFrecuente(
+                        tipo.name(),
+                        monto,
+                        referenciaLimpia);
 
         String detalleOrigen = cuentaOrigenInterna != null
-                ? " (transferencia interna desde " + referenciaLimpia
-                    + (nombrePropietarioOrigen != null ? ", titular: " + nombrePropietarioOrigen : "")
-                    + ")"
+                ? " (Transferencia interna desde "
+                + referenciaLimpia
+                + (nombrePropietarioOrigen != null
+                ? " - Titular: " + nombrePropietarioOrigen
+                : "")
+                + ")"
                 : "";
-        notificador.notificarTodos("RECARGA_COMPLETADA",
-                "Recarga de S/." + monto + " acreditada en cuenta " + numeroCuenta
-                        + " | " + resultado + detalleOrigen + " | Comprobante: " + comprobante);
+
+        EventoOperacion evento = new EventoOperacion(
+                cuenta.getUsuario(),
+                "RECARGA",
+                "Recarga de S/. "
+                        + monto
+                        + " acreditada en la cuenta "
+                        + numeroCuenta
+                        + detalleOrigen
+                        + " | Comprobante: "
+                        + comprobante,
+                monto
+        );
+
+        notificador.notificarTodos(evento);
 
         return recarga;
     }
 
     @Transactional
     public Recarga repetirUltimaRecarga(String numeroCuenta) {
+
         if (ultimaOperacionFrecuente == null) {
-            throw new IllegalStateException("No hay operaciones frecuentes registradas todavía.");
+            throw new IllegalStateException(
+                    "No hay operaciones frecuentes registradas.");
         }
-        // PROTOTYPE: clona la última operación en lugar de reconstruirla desde cero
-        OperacionFrecuente clon = ultimaOperacionFrecuente.clonarOperacion();
-        String tipoOrigen = clon.getTipoOperacion().contains("TARJETA") ? "TARJETA" : "BANCO";
-        return recargarSaldo(numeroCuenta, clon.getMontoHabitual(), tipoOrigen, clon.getReferenciaHabitual());
+
+        OperacionFrecuente clon =
+                ultimaOperacionFrecuente.clonarOperacion();
+
+        String tipoOrigen =
+                clon.getTipoOperacion().contains("TARJETA")
+                        ? "TARJETA"
+                        : "BANCO";
+
+        return recargarSaldo(
+                numeroCuenta,
+                clon.getMontoHabitual(),
+                tipoOrigen,
+                clon.getReferenciaHabitual());
     }
 
     @Transactional
-    public Retiro retirarEnAgente(String numeroCuenta, String codigoAgente, double monto, boolean biometriaValida) {
+    public Retiro retirarEnAgente(
+            String numeroCuenta,
+            String codigoAgente,
+            double monto,
+            boolean biometriaValida) {
+
         Cuenta cuenta = cuentaRepository.findById(numeroCuenta)
-                .orElseThrow(() -> new IllegalArgumentException("La cuenta no existe."));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("La cuenta no existe."));
 
         Agente agente = agenteRepository.findById(codigoAgente)
-                .orElseThrow(() -> new IllegalArgumentException("El agente no existe o no está disponible."));
+                .orElseThrow(() ->
+                        new IllegalArgumentException("El agente no existe."));
 
         if (!agente.isActivo()) {
-            throw new IllegalStateException("El agente seleccionado no está disponible actualmente.");
+            throw new IllegalStateException(
+                    "El agente no está disponible.");
         }
+
         if (monto <= 0 || monto > cuenta.getSaldo()) {
-            throw new IllegalArgumentException("Saldo insuficiente o monto inválido para el retiro.");
+            throw new IllegalArgumentException(
+                    "Saldo insuficiente o monto inválido.");
         }
 
-
-        Retiro retiro = retiroFacade.procesarRetiro(cuenta, agente, monto, biometriaValida);
+        Retiro retiro =
+                retiroFacade.procesarRetiro(
+                        cuenta,
+                        agente,
+                        monto,
+                        biometriaValida);
 
         cuenta.setSaldo(cuenta.getSaldo() - monto);
+
         cuentaRepository.save(cuenta);
+
         retiroRepository.save(retiro);
+
+        EventoOperacion evento = new EventoOperacion(
+                cuenta.getUsuario(),
+                "RETIRO",
+                "Retiro de S/. "
+                        + monto
+                        + " realizado en el agente "
+                        + agente.getNombre(),
+                monto
+        );
+
+        notificador.notificarTodos(evento);
 
         return retiro;
     }
@@ -181,7 +252,6 @@ public class RecargaRetiroService {
     public List<Agente> obtenerAgentesDisponibles() {
         return agenteRepository.findByActivoTrue();
     }
-
 
     public List<Cuenta> obtenerTodasLasCuentas() {
         return cuentaRepository.findAll();
