@@ -232,7 +232,7 @@ public class RecargaRetiroService {
                 "Retiro de S/. "
                         + monto
                         + " realizado en el agente "
-                        + agente.getNombre(),
+                        + agente.getNombreComercial(),
                 monto
         );
 

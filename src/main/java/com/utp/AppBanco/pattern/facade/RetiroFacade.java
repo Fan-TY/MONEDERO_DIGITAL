@@ -5,6 +5,7 @@ import com.utp.AppBanco.model.Cuenta;
 import com.utp.AppBanco.model.Retiro;
 import com.utp.AppBanco.pattern.adapter.AgenteExterno;
 import com.utp.AppBanco.pattern.factory.OperacionFinancieraFactory;
+import com.utp.AppBanco.pattern.observer.EventoOperacion;
 import com.utp.AppBanco.pattern.observer.NotificadorOperaciones;
 import com.utp.AppBanco.pattern.state.EstadoOperacion;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +55,13 @@ public class RetiroFacade {
         retiro.cambiarEstado(EstadoOperacion.ENTREGADO);
 
         // 5. OBSERVER: notifica el evento a todos los canales suscritos
-        notificador.notificarTodos("RETIRO_COMPLETADO",
+        notificador.notificarTodos(new EventoOperacion(
+                cuenta.getUsuario(),
+                "RETIRO_COMPLETADO",
                 "Retiro de S/." + monto + " entregado en agente " + agente.getNombreComercial()
-                        + " | Comprobante: " + comprobante);
+                        + " | Comprobante: " + comprobante,
+                monto
+        ));
 
         System.out.println("[FACADE] Proceso de retiro finalizado con comprobante: " + comprobante);
         return retiro;
