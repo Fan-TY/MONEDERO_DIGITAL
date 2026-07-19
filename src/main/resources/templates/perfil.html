@@ -28,14 +28,32 @@
                             <i class="bi bi-person-circle me-1"></i> Mi Perfil
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link text-muted-dark fw-semibold" href="/transferir">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle text-muted-dark fw-semibold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                             <i class="bi bi-arrow-left-right me-1"></i> Transacciones
                         </a>
+                        <ul class="dropdown-menu dropdown-menu-dark bg-card-dark border border-dark shadow">
+                            <li>
+                                <a class="dropdown-item text-white" href="/recargar">
+                                    <i class="bi bi-plus-circle-dotted me-2 text-electric-blue"></i> Recargar
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item text-white" href="/retirar">
+                                    <i class="bi bi-cash-stack me-2 text-electric-blue"></i> Retirar
+                                </a>
+                            </li>
+                        </ul>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link text-muted-dark fw-semibold" href="/historial">
                             <i class="bi bi-clock-history me-1"></i> Historial
+                        </a>
+                    </li>
+                    <!-- STATE: acceso al panel de administración solo para usuarios ADMIN -->
+                    <li class="nav-item" th:if="${usuario.tipoUsuario == 'ADMIN'}">
+                        <a class="nav-link text-muted-dark fw-semibold" href="/admin/usuarios">
+                            <i class="bi bi-shield-lock-fill me-1"></i> Panel Admin
                         </a>
                     </li>
                 </ul>
