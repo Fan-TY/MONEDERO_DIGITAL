@@ -109,4 +109,10 @@ public class UsuarioService {
     public List<Cuenta> obtenerCuentasPorUsuario(Usuario usuario) {
         return cuentaRepository.findByUsuario(usuario);
     }
+
+    // STATE: usado por el panel de administración para listar todos los usuarios
+    // junto con su estado actual (ACTIVO / SUSPENDIDO / BLOQUEADO)
+    public List<Usuario> obtenerTodosLosUsuarios() {
+        return usuarioRepository.findAll();
+    }
 }

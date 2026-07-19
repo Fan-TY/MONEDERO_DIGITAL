@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lukita - Historial de Transacciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="min-vh-100 py-3">
+
+<!-- Navbar -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-card-dark shadow border-bottom border-dark rounded-4 mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand fw-bold d-inline-flex align-items-center text-white me-4" href="/perfil">
+            <i class="bi bi-coin text-electric-blue me-2"></i>Lukita
+        </a>
+        <button class="navbar-toggler border-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav me-auto mb-2 mb-lg-0 gap-2">
+                <li class="nav-item">
+                    <a class="nav-link text-muted-dark fw-semibold" href="/perfil">
+                        <i class="bi bi-person-circle me-1"></i> Mi Perfil
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle text-muted-dark fw-semibold" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="bi bi-arrow-left-right me-1"></i> Transacciones
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-dark bg-card-dark border border-dark shadow">
+                        <li>
+                            <a class="dropdown-item text-white" href="/recargar">
+                                <i class="bi bi-plus-circle-dotted me-2 text-electric-blue"></i> Recargar
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item text-white" href="/retirar">
+                                <i class="bi bi-cash-stack me-2 text-electric-blue"></i> Retirar
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active fw-semibold text-white border-bottom border-electric-blue" href="/historial">
+                        <i class="bi bi-clock-history me-1"></i> Historial
+                    </a>
+                </li>
+            </ul>
+            <div class="d-flex">
+                <a th:href="@{/logout}" class="btn btn-outline-light btn-sm fw-bold rounded-pill px-3">
+                    <i class="bi bi-box-arrow-right me-1"></i> Cerrar Sesión
+                </a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+
+    <h4 class="fw-bold text-white mb-4">
+        <i class="bi bi-clock-history me-2 text-electric-blue"></i> Historial de Transacciones
+    </h4>
+
+    <!-- Recargas -->
+    <div class="bg-card-dark rounded-4 shadow border border-dark mb-4">
+        <div class="p-4 border-bottom border-dark">
+            <h5 class="mb-0 fw-bold text-white d-flex align-items-center">
+                <i class="bi bi-plus-circle-dotted me-2 text-electric-blue"></i> Recargas
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0 custom-table-dark">
+                <thead class="text-muted-dark small text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <tr>
+                        <th class="ps-4 py-3 border-dark">Fecha</th>
+                        <th class="py-3 border-dark">Cuenta</th>
+                        <th class="py-3 border-dark">Origen</th>
+                        <th class="py-3 border-dark">Monto</th>
+                        <th class="py-3 border-dark">Comprobante</th>
+                        <th class="text-end pe-4 py-3 border-dark">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="recarga : ${recargas}" class="border-dark">
+                        <td class="ps-4 py-3 small text-muted-dark" th:text="${#temporals.format(recarga.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                        <td class="py-3"><code class="text-electric-blue" th:text="${recarga.cuenta.numeroCuenta}">000-000</code></td>
+                        <td class="py-3 small" th:text="${recarga.tipoOrigen}">BANCO</td>
+                        <td class="py-3 fw-bold text-white">
+                            S/ <span th:text="${#numbers.formatDecimal(recarga.monto, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </td>
+                        <td class="py-3 small text-muted-dark" th:text="${recarga.comprobante}">REC-XXXX</td>
+                        <td class="text-end pe-4 py-3">
+                            <!-- STATE: color e ícono vienen directamente del enum EstadoOperacion -->
+                            <span th:class="'badge bg-' + ${recarga.estado.colorBootstrap} + ' bg-opacity-20 text-white border border-' + ${recarga.estado.colorBootstrap} + ' border-opacity-25 rounded-pill px-3 py-1'">
+                                <i th:class="'bi ' + ${recarga.estado.iconoBootstrap} + ' me-1'"></i>
+                                <span th:text="${recarga.estado.etiqueta}">Estado</span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(recargas)}">
+                        <td colspan="6" class="text-center py-5 text-muted-dark">Aún no tienes recargas registradas.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Retiros -->
+    <div class="bg-card-dark rounded-4 shadow border border-dark mb-4">
+        <div class="p-4 border-bottom border-dark">
+            <h5 class="mb-0 fw-bold text-white d-flex align-items-center">
+                <i class="bi bi-cash-stack me-2 text-electric-blue"></i> Retiros
+            </h5>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-dark table-hover align-middle mb-0 custom-table-dark">
+                <thead class="text-muted-dark small text-uppercase" style="background-color: rgba(0,0,0,0.2);">
+                    <tr>
+                        <th class="ps-4 py-3 border-dark">Fecha</th>
+                        <th class="py-3 border-dark">Cuenta</th>
+                        <th class="py-3 border-dark">Agente</th>
+                        <th class="py-3 border-dark">Monto</th>
+                        <th class="py-3 border-dark">Comprobante</th>
+                        <th class="text-end pe-4 py-3 border-dark">Estado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="retiro : ${retiros}" class="border-dark">
+                        <td class="ps-4 py-3 small text-muted-dark" th:text="${#temporals.format(retiro.fecha, 'dd/MM/yyyy HH:mm')}">01/01/2026</td>
+                        <td class="py-3"><code class="text-electric-blue" th:text="${retiro.cuenta.numeroCuenta}">000-000</code></td>
+                        <td class="py-3 small" th:text="${retiro.agente.nombreComercial}">Agente</td>
+                        <td class="py-3 fw-bold text-white">
+                            S/ <span th:text="${#numbers.formatDecimal(retiro.monto, 1, 'COMMA', 2, 'POINT')}">0.00</span>
+                        </td>
+                        <td class="py-3 small text-muted-dark" th:text="${retiro.comprobante}">RET-XXXX</td>
+                        <td class="text-end pe-4 py-3">
+                            <span th:class="'badge bg-' + ${retiro.estado.colorBootstrap} + ' bg-opacity-20 text-white border border-' + ${retiro.estado.colorBootstrap} + ' border-opacity-25 rounded-pill px-3 py-1'">
+                                <i th:class="'bi ' + ${retiro.estado.iconoBootstrap} + ' me-1'"></i>
+                                <span th:text="${retiro.estado.etiqueta}">Estado</span>
+                            </span>
+                        </td>
+                    </tr>
+                    <tr th:if="${#lists.isEmpty(retiros)}">
+                        <td colspan="6" class="text-center py-5 text-muted-dark">Aún no tienes retiros registrados.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
